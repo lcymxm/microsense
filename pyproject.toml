@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "microsense"
+version = "1.0.0"
+description = "Multi-function sensor node for microcontrollers, in MicroPython"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "lcymxm" }]
+keywords = ["micropython", "esp32", "sensor", "modbus", "i2c", "scada"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+microsense = "microsense.cli:main"
+
+[tool.setuptools]
+packages = ["microsense", "microsense.drivers"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

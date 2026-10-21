@@ -1,0 +1,125 @@
+# Ready made tag table for the ScadaKit gateway (https://github.com/lcymxm/scadakit).
+#
+#   python -m microsense run --modbus-port 1502
+#   scadakit probe --tags examples/scadakit.tags --port 1502
+#
+# The register order matches microsense/cli.py POINT_ORDER. Every point is one
+# 16 bit register; `gain` undoes the scaling the node applied.
+
+[tag:SN-TEMP]
+description = 传感器温度
+unit = °C
+station = 1
+register = input:0
+type = int16
+gain = 0.01
+deadband = 0.05
+hi = 30
+hihi = 35
+
+[tag:SN-HUMI]
+description = 相对湿度
+unit = %
+station = 1
+register = input:1
+type = int16
+gain = 0.01
+deadband = 0.1
+hi = 80
+lo = 20
+
+[tag:SN-LUX]
+description = 照度
+unit = lx
+station = 1
+register = input:2
+type = uint16
+gain = 1
+deadband = 5
+
+[tag:SN-AX]
+description = X 轴加速度
+unit = g
+station = 1
+register = input:3
+type = int16
+gain = 0.001
+
+[tag:SN-AY]
+description = Y 轴加速度
+unit = g
+station = 1
+register = input:4
+type = int16
+gain = 0.001
+
+[tag:SN-AZ]
+description = Z 轴加速度
+unit = g
+station = 1
+register = input:5
+type = int16
+gain = 0.001
+
+[tag:SN-PITCH]
+description = 俯仰角
+unit = °
+station = 1
+register = input:6
+type = int16
+gain = 0.01
+hi = 45
+lo = -45
+
+[tag:SN-ROLL]
+description = 横滚角
+unit = °
+station = 1
+register = input:7
+type = int16
+gain = 0.01
+
+[tag:SN-VOLT]
+description = 电源电压
+unit = V
+station = 1
+register = input:8
+type = uint16
+gain = 0.01
+deadband = 0.02
+hi = 13.2
+lo = 10.8
+
+[tag:SN-CURR]
+description = 负载电流
+unit = A
+station = 1
+register = input:9
+type = uint16
+gain = 0.001
+deadband = 0.005
+hi = 1.2
+
+[tag:SN-POWER]
+description = 负载功率
+unit = W
+station = 1
+register = input:10
+type = uint16
+gain = 0.01
+
+[tag:SN-ALARM]
+description = 节点报警字
+unit =
+station = 1
+register = input:11
+type = uint16
+gain = 1
+
+[tag:SN-UPTIME]
+description = 节点运行时间
+unit = s
+station = 1
+register = input:13
+type = uint16
+gain = 1

@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: python ${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.9", "3.12"]
+        exclude:
+          # One non-Linux run per version is enough; keep the matrix cheap.
+          - os: macos-latest
+            python: "3.9"
+          - os: windows-latest
+            python: "3.9"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Run the unit and end-to-end tests
+        run: python -m pytest -q
+
+      - name: Check the CLI works without hardware
+        run: |
+          python -m microsense dump --format json
+          python -m microsense run --once --format table
+          python -m microsense run --format json --seconds 1 --interval-ms 200
+
+  micropython:
+    name: micropython syntax and import check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: micropython/micropython
+          path: micropython-src
+
+      - name: Build the unix port
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libffi-dev pkg-config
+          make -C micropython-src/mpy-cross -j"$(nproc)"
+          make -C micropython-src/ports/unix -j"$(nproc)" \
+            MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_PY_SSL=0
+
+      - name: Compile every module with mpy-cross
+        run: |
+          # mpy-cross rejects syntax the board would reject, which is the cheapest
+          # possible guard against drifting into CPython-only constructs.
+          find microsense firmware -name '*.py' -print0 |
+            xargs -0 micropython-src/mpy-cross/build/mpy-cross -o /dev/null
+
+      - name: Import the package under real MicroPython
+        run: |
+          # sim.py needs struct and math only; importing it proves the core
+          # modules do not reach for anything MicroPython does not have.
+          micropython-src/ports/unix/build-standard/micropython -c "
+          import sys
+          sys.path.insert(0, '.')
+          import microsense.clock, microsense.bus, microsense.filters
+          import microsense.calibration, microsense.node, microsense.modbus
+          import microsense.drivers, microsense.lineproto, microsense.sim
+          print('all core modules import under MicroPython')
+          "
