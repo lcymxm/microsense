@@ -70,9 +70,11 @@ jobs:
       - name: Compile every module with mpy-cross
         run: |
           # mpy-cross rejects syntax the board would reject, which is the cheapest
-          # possible guard against drifting into CPython-only constructs.
+          # possible guard against drifting into CPython-only constructs. It takes
+          # one input per run, hence -n1.
           find microsense firmware -name '*.py' -print0 |
-            xargs -0 micropython-src/mpy-cross/build/mpy-cross -o /dev/null
+            xargs -0 -n1 micropython-src/mpy-cross/build/mpy-cross -o /dev/null
+          echo "all modules compile to MicroPython bytecode"
 
       - name: Import the package under real MicroPython
         run: |
