@@ -52,13 +52,20 @@ jobs:
           repository: micropython/micropython
           path: micropython-src
 
-      - name: Build the unix port
+      - name: Install build dependencies
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq build-essential libffi-dev pkg-config
+
+      - name: Fetch the submodules the unix port needs
+        # The port freezes micropython-lib into the binary, and without this the
+        # build stops with "micropython-lib submodule is not initialized".
+        run: make -C micropython-src/ports/unix submodules
+
+      - name: Build the unix port
+        run: |
           make -C micropython-src/mpy-cross -j"$(nproc)"
-          make -C micropython-src/ports/unix -j"$(nproc)" \
-            MICROPY_PY_FFI=0 MICROPY_PY_BTREE=0 MICROPY_PY_SSL=0
+          make -C micropython-src/ports/unix -j"$(nproc)"
 
       - name: Compile every module with mpy-cross
         run: |
